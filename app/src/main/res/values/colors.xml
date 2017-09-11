@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <item name="black" type="color">#000000</item>
+    <item name="white" type="color">#ffffff</item>
+
+    <item name="dark_burgundy" type="color">#1a0000</item>
+    <item name="burgundy" type="color">#800000</item>
+    <item name="dark_red" type="color">#990000</item>
+    <item name="red" type="color">#ff0000</item>
+    <item name="light_red" type="color">#ff3333</item>
+
+    <item name="dark_orange" type="color">#b32d00</item>
+    <item name="orange" type="color">#ff4000</item>
+    <item name="light_orange" type="color">#ff8000</item>
+    <item name="orange_yellow" type="color">#ffbf00</item>
+    <item name="yellow" type="color">#ffff00</item>
+    <item name="yellow_green" type="color">#bfff00</item>
+
+    <item name="pine_green" type="color">#001a00</item>
+    <item name="dark_green" type="color">#006600</item>
+    <item name="green" type="color">#00b300</item>
+    <item name="light_green" type="color">#00ff00</item>
+    <item name="spring_green" type="color">#00ff80</item>
+
+    <item name="navy_blue" type="color">#000033</item>
+    <item name="dark_blue" type="color">#0000ff</item>
+    <item name="blue" type="color">#0040ff</item>
+    <item name="light_blue" type="color">#00bfff</item>
+    <item name="cyan" type="color">#00ffff</item>
+
+    <item name="dark_indigo" type="color">#2d00b3</item>
+    <item name="indigo" type="color">#4000ff</item>
+    <item name="light_indigo" type="color">#6633ff</item>
+
+    <item name="dark_violet" type="color">#28004d</item>
+    <item name="violet" type="color">#5c00b3</item>
+    <item name="light_violet" type="color">#8000ff</item>
+    <item name="vibrant_violet" type="color">#bf00ff</item>
+
+    <item name="dark_pink" type="color">#990073</item>
+    <item name="vibrant_pink" type="color">#ff0080</item>
+    <item name="pink" type="color">#e600ac</item>
+    <item name="light_pink" type="color">#ff4dd2</item>
+
+
+
+    <integer-array name="chord_diagram_colours">
+        <item>@color/dark_burgundy</item>
+        <item>@color/burgundy</item>
+        <item>@color/dark_red</item>
+        <item>@color/red</item>
+        <item>@color/light_red</item>
+
+        <item>@color/dark_orange</item>
+        <item>@color/orange</item>
+        <item>@color/light_orange</item>
+        <item>@color/orange_yellow</item>
+        <item>@color/yellow</item>
+        <item>@color/yellow_green</item>
+
+        <item>@color/pine_green</item>
+        <item>@color/dark_green</item>
+        <item>@color/green</item>
+        <item>@color/light_green</item>
+        <item>@color/spring_green</item>
+
+        <item>@color/navy_blue</item>
+        <item>@color/dark_blue</item>
+        <item>@color/blue</item>
+        <item>@color/light_blue</item>
+        <item>@color/cyan</item>
+
+        <item>@color/dark_indigo</item>
+        <item>@color/indigo</item>
+        <item>@color/light_indigo</item>
+
+        <item>@color/dark_violet</item>
+        <item>@color/violet</item>
+        <item>@color/light_violet</item>
+        <item>@color/vibrant_violet</item>
+
+        <item>@color/dark_pink</item>
+        <item>@color/vibrant_pink</item>
+        <item>@color/pink</item>
+        <item>@color/light_pink</item>
+    </integer-array>
+
+</resources>

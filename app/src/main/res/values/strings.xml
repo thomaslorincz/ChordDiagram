@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ChordDiagramView</string>
+    <string name="add_item">Add item</string>
+    <string name="add_link">Add link</string>
+    <string name="first_item">First item</string>
+    <string name="item_name">Item name</string>
+    <string name="item_style">Item style</string>
+    <string name="second_item">Second item</string>
+</resources>
