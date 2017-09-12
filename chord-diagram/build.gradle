@@ -1,5 +1,29 @@
 apply plugin: 'com.android.library'
 
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'chord-diagram'
+
+    publishedGroupId = 'com.thomaslorincz'
+    libraryName = 'chord-diagram'
+    artifact = 'chord-diagram'
+
+    libraryDescription = 'An Android library for drawing rotatable chord diagrams (radial network diagrams).'
+
+    siteUrl = 'https://github.com/thomaslorincz/ChordDiagram'
+    gitUrl = 'https://github.com/thomaslorincz/ChordDiagram.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'thomaslorincz'
+    developerName = 'Thomas Lorincz'
+    developerEmail = 'thomasglorincz@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.1"
@@ -31,3 +55,6 @@ dependencies {
     compile 'com.android.support:support-v13:26.0.2'
     testCompile 'junit:junit:4.12'
 }
+
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
