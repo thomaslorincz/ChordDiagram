@@ -19,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.Scroller;
 import android.widget.TextView;
 
-import com.thomaslorincz.chord_diagram.R;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -53,8 +51,6 @@ public class ChordDiagram extends ViewGroup {
     // XML attributes
     private boolean mShowText;
     private int mItemStyle;
-
-    private boolean calibrated = false;
 
     /**
      * Items are styled to be arcs of a circle.
@@ -161,22 +157,18 @@ public class ChordDiagram extends ViewGroup {
         rotation = (((rotation % 360) + 360) % 360);
         mDiagramRotation = rotation;
         mChordDiagramView.rotateTo(rotation);
+    }
 
+    public void setTextRotation(int theta) {
         for (Map.Entry<String, Item> entry : mItems.entrySet()) {
             Item it = entry.getValue();
-            double angle = (it.mLabelAngle - rotation);
-            Log.d("Test 1", String.valueOf(it.mLabelAngle - rotation));
-            Log.d("Test 2", String.valueOf(rotation - it.mLabelAngle));
-            Log.d("Bounds x", String.valueOf(mDiagramBounds.centerX()));
-            Log.d("Bounds y", String.valueOf(mDiagramBounds.centerY()));
-            float dx = (float) ((Math.cos(-1 * Math.toRadians(angle)) * mRadius) + mDiagramBounds.centerX());
-            float dy = (float) ((Math.sin(-1 * Math.toRadians(angle)) * mRadius) + mDiagramBounds.centerY());
-            Log.d("Dx", String.valueOf(dx));
-            Log.d("Dy", String.valueOf(dy));
+            double angle = (it.mLabelAngle - theta);
+            it.mLabelAngle -= theta;
+            float dx = (float) ((Math.cos(Math.toRadians(angle)) * mRadius) + mDiagramBounds.centerX());
+            float dy = (float) ((Math.sin(Math.toRadians(angle)) * mRadius) + mDiagramBounds.centerY());
             it.mTextView.setX(dx);
             it.mTextView.setY(dy);
         }
-
     }
 
     public int getItemStyle() {
@@ -190,8 +182,6 @@ public class ChordDiagram extends ViewGroup {
     }
 
     private void init() {
-        calibrated = false;
-
         // Set up the paint for the items.
         mItemPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -314,8 +304,6 @@ public class ChordDiagram extends ViewGroup {
                     getYCoord(centreAngle) - (it.mTextView.getMeasuredHeight() / 2),
                     getXCoord(centreAngle) + (it.mTextView.getMeasuredWidth() / 2),
                     getYCoord(centreAngle) + (it.mTextView.getMeasuredHeight() / 2));
-            it.mTextView.setX(getXCoord(centreAngle) - (it.mTextView.getMeasuredWidth() / 2));
-            it.mTextView.setY(getYCoord(centreAngle) - (it.mTextView.getMeasuredHeight() / 2));
         }
         onDataChanged();
     }
@@ -440,8 +428,10 @@ public class ChordDiagram extends ViewGroup {
                     distanceY,
                     e2.getX() - mDiagramBounds.centerX(),
                     e2.getY() - mDiagramBounds.centerY());
-            int rotation = getDiagramRotation() - (int) scrollTheta / FLING_VELOCITY_DOWNSCALE;
+            int theta = (int) scrollTheta / FLING_VELOCITY_DOWNSCALE;
+            int rotation = getDiagramRotation() - theta;
             setDiagramRotation(rotation);
+            setTextRotation(theta);
             return true;
         }
 
@@ -453,6 +443,7 @@ public class ChordDiagram extends ViewGroup {
                     velocityY,
                     e2.getX() - mDiagramBounds.centerX(),
                     e2.getY() - mDiagramBounds.centerY());
+            Log.d("Fling theta", String.valueOf((int) scrollTheta / FLING_VELOCITY_DOWNSCALE));
             mScroller.fling(
                     0,
                     getDiagramRotation(),
@@ -487,6 +478,7 @@ public class ChordDiagram extends ViewGroup {
     private void tickScrollAnimation() {
         if (!mScroller.isFinished()) {
             mScroller.computeScrollOffset();
+            setTextRotation(getDiagramRotation() - mScroller.getCurrY());
             setDiagramRotation(mScroller.getCurrY());
         } else {
             mScrollAnimator.cancel();
