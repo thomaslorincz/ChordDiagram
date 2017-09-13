@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.example.thomas.chorddiagramview.lib.ChordDiagram
+    <com.thomaslorincz.chord_diagram.ChordDiagram
         android:id="@+id/chord_diagram"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

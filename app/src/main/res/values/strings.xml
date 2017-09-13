@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ChordDiagramView</string>
+    <string name="app_name">ChordDiagram</string>
     <string name="add_item">Add item</string>
     <string name="add_link">Add link</string>
     <string name="first_item">First item</string>

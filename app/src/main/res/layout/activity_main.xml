@@ -19,7 +19,7 @@
         app:tabSelectedTextColor="@color/white"
         app:tabTextColor="@color/white"/>
 
-    <com.example.thomas.chorddiagramview.lib.NonSwipeableViewPager
+    <com.thomaslorincz.chorddiagram.pagers.NonSwipeableViewPager
         android:id="@+id/pager"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"/>
