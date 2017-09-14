@@ -10,8 +10,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,23 +25,24 @@ import java.util.Map;
 
 /**
  * Created by Thomas on 15/08/2017.
- * ChordDiagram is a view group that displays a chord diagram. Rotation support is in development.
+ * ChordDiagram is a view group that displays a chord diagram.
  */
-
 public class ChordDiagram extends ViewGroup {
     private Map<String, Item> mItems = new LinkedHashMap<>();
     private Map<Integer, Link> mLinks = new LinkedHashMap<>();
 
     private ChordDiagramView mChordDiagramView;
 
-    private RectF mDiagramBounds = new RectF();
+    private RectF mViewBounds = new RectF(); // Bounds for the ChordDiagramView as a whole
+    private RectF mDiagramBounds = new RectF(); // Bounds for the diagram itself (hollow circle)
 
-    private float mRadius;
+    private float mDiagramRadius;
+    private float mTextRadius;
     private int mRingThickness;
 
     private Paint mItemPaint;
     private Paint mLinkPaint;
-    private Paint mTextPaint;
+    private Paint mInnerCirclePaint;
 
     private int mDiagramRotation;
     private Scroller mScroller;
@@ -70,11 +72,9 @@ public class ChordDiagram extends ViewGroup {
     private class Item {
         private String mLabel;
         private TextView mTextView;
-        private float mLabelAngle;
-        private float mLabelStartX;
-        private float mLabelStartY;
         private int mColour;
         private float mStartAngle;
+        private float mCenterAngle;
         private float mEndAngle;
         private int mNumConnections;
         private int mNumUnassigned;
@@ -108,8 +108,7 @@ public class ChordDiagram extends ViewGroup {
     public ChordDiagram(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray typedArray = context.getTheme().obtainStyledAttributes(
-                attrs, R.styleable.ChordDiagram, 0, 0
-        );
+                attrs, R.styleable.ChordDiagram, 0, 0);
         try {
             mShowText = typedArray.getBoolean(R.styleable.ChordDiagram_showText, false);
             mItemStyle = typedArray.getInt(R.styleable.ChordDiagram_itemStyle, 0);
@@ -127,7 +126,7 @@ public class ChordDiagram extends ViewGroup {
     public boolean getShowText() {return mShowText;}
 
     /**
-     * Controls whether the text label is visible or not. Setting this property to
+     * Controls whether the text labels are visible or not. Setting this property to
      * false allows the chord diagram graphic to take up the entire visible area of
      * the control.
      *
@@ -136,6 +135,26 @@ public class ChordDiagram extends ViewGroup {
     public void setShowText(boolean showText) {
         mShowText = showText;
         invalidate();
+    }
+
+    /**
+     * Returns an integer constant representing the style of the items in the diagram.
+     *
+     * @return 0 if the items are styled to be arcs. 1 if the items are styled to be nodes.
+     */
+    public int getItemStyle() {
+        return mItemStyle;
+    }
+
+    /**
+     * Sets the style (shape) of the items.
+     *
+     * @param style An integer representing the desired item style.
+     */
+    public void setItemStyle(int style) {
+        if ((style == 0) || (style == 1)) {
+            mItemStyle = style;
+        }
     }
 
     /**
@@ -148,59 +167,57 @@ public class ChordDiagram extends ViewGroup {
     }
 
     /**
-     * Set the current rotation of the pie graphic. Setting this value may change
-     * the current item.
+     * Set the current rotation of the diagram graphic.
      *
      * @param rotation The current pie rotation, in degrees.
      */
     public void setDiagramRotation(int rotation) {
         rotation = (((rotation % 360) + 360) % 360);
         mDiagramRotation = rotation;
-        mChordDiagramView.rotateTo(rotation);
+        mChordDiagramView.setRotation(rotation);
     }
 
+    /**
+     * Set the current rotation of the TextViews.
+     *
+     * @param theta The change in rotation of the chord diagram.
+     */
     public void setTextRotation(int theta) {
         for (Map.Entry<String, Item> entry : mItems.entrySet()) {
             Item it = entry.getValue();
-            double angle = (it.mLabelAngle - theta);
-            it.mLabelAngle -= theta;
-            float dx = (float) ((Math.cos(Math.toRadians(angle)) * mRadius) + mDiagramBounds.centerX());
-            float dy = (float) ((Math.sin(Math.toRadians(angle)) * mRadius) + mDiagramBounds.centerY());
-            it.mTextView.setX(dx);
-            it.mTextView.setY(dy);
-        }
-    }
-
-    public int getItemStyle() {
-        return mItemStyle;
-    }
-
-    public void setItemStyle(int style) {
-        if ((style == 0) || (style == 1)) {
-            mItemStyle = style;
+            double angle = Math.toRadians(it.mCenterAngle - theta);
+            it.mCenterAngle -= theta;
+            float dx = (float) ((Math.cos(angle) * mTextRadius) + mViewBounds.centerX());
+            float dy = (float) ((Math.sin(angle) * mTextRadius) + mViewBounds.centerY());
+            it.mTextView.setX(dx - (it.mTextView.getMeasuredWidth() / 2));
+            it.mTextView.setY(dy - (it.mTextView.getMeasuredHeight() / 2));
         }
     }
 
     private void init() {
-        // Set up the paint for the items.
         mItemPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        // Set up the paint for the links.
         mLinkPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mLinkPaint.setStyle(Paint.Style.STROKE);
-
-        // Set up the paint for the label text
-        mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mTextPaint.setColor(Color.BLACK);
-        mTextPaint.setTextAlign(Paint.Align.CENTER);
-        mTextPaint.setTextSize(24.0f);
 
         // Add a child view to draw the diagram. Putting this in a child view
         // makes it possible to draw it on a separate hardware layer that rotates
         // independently
         mChordDiagramView = new ChordDiagramView(getContext());
         addView(mChordDiagramView);
-        mChordDiagramView.rotateTo(mDiagramRotation);
+        mChordDiagramView.setRotation(mDiagramRotation);
+
+        mInnerCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mInnerCirclePaint.setStyle(Paint.Style.FILL);
+        int color = Color.WHITE;
+        Drawable background = this.getBackground();
+        if (background instanceof ColorDrawable) {
+            color = ((ColorDrawable) background).getColor();
+            if (color == Color.TRANSPARENT) {
+                color = Color.WHITE;
+            }
+        }
+        mInnerCirclePaint.setColor(color);
 
         // Set up an animator to animate the PieRotation property. This is used to
         // correct the pie's orientation after the user lets go of it.
@@ -212,7 +229,7 @@ public class ChordDiagram extends ViewGroup {
             public void onAnimationStart(Animator animator) {}
 
             public void onAnimationEnd(Animator animator) {
-                mChordDiagramView.decelerate();
+                mChordDiagramView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 for (Map.Entry<String, Item> entry : mItems.entrySet()) {
                     entry.getValue().mTextView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 }
@@ -222,7 +239,6 @@ public class ChordDiagram extends ViewGroup {
 
             public void onAnimationRepeat(Animator animator) {}
         });
-
 
         // Create a Scroller to handle the fling gesture.
         mScroller = new Scroller(getContext(), null, true);
@@ -255,14 +271,13 @@ public class ChordDiagram extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // Try for a width based on our minimum
-        int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
+        int minw = (getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth());
         int minh = (getPaddingBottom() + getPaddingTop() + getSuggestedMinimumHeight());
 
         int w = Math.max(minw, MeasureSpec.getSize(widthMeasureSpec));
         int h = Math.max(minh, MeasureSpec.getSize(heightMeasureSpec));
 
         int d = Math.min(w, h);
-
         setMeasuredDimension(d, d);
     }
 
@@ -278,33 +293,50 @@ public class ChordDiagram extends ViewGroup {
 
         // Figure out how big we can make the pie.
         float diameter = Math.min(ww, hh);
-//        mRingThickness = (int) (0.05 * diameter);
-        mRingThickness = 1;
-        mRadius = (diameter / 2) - mRingThickness;
+        mRingThickness = (int) (0.02 * diameter);
 
-        mDiagramBounds = new RectF(0.0f, 0.0f, diameter, diameter);
-        mDiagramBounds.offsetTo(getPaddingLeft(), getPaddingTop());
+        mViewBounds = new RectF(0.0f, 0.0f, diameter, diameter);
+        mViewBounds.offsetTo(getPaddingLeft(), getPaddingTop());
 
-
-        // Lay out the child view that actually draws the pie.
+        // Lay out the child view that actually draws the diagram.
         mChordDiagramView.layout(
-                (int) mDiagramBounds.left,
-                (int) mDiagramBounds.top,
-                (int) mDiagramBounds.right,
-                (int) mDiagramBounds.bottom);
-        mChordDiagramView.setPivot(mDiagramBounds.centerX(), mDiagramBounds.centerY());
+                (int) mViewBounds.left,
+                (int) mViewBounds.top,
+                (int) mViewBounds.right,
+                (int) mViewBounds.bottom);
+        mChordDiagramView.setPivotX(mViewBounds.centerX());
+        mChordDiagramView.setPivotX(mViewBounds.centerY());
 
-
-        for (Map.Entry<String, Item> entry : mItems.entrySet()) {
-            Item it = entry.getValue();
-            it.mTextView.measure(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-            float centreAngle = ((it.mStartAngle + it.mEndAngle) / 2);
-            it.mTextView.layout(
-                    getXCoord(centreAngle) - (it.mTextView.getMeasuredWidth() / 2),
-                    getYCoord(centreAngle) - (it.mTextView.getMeasuredHeight() / 2),
-                    getXCoord(centreAngle) + (it.mTextView.getMeasuredWidth() / 2),
-                    getYCoord(centreAngle) + (it.mTextView.getMeasuredHeight() / 2));
+        float maxTextWidth = 0.0f;
+        float maxTextHeight = 0.0f;
+        if (mShowText) {
+            for (Map.Entry<String, Item> entry : mItems.entrySet()) {
+                Item it = entry.getValue();
+                it.mTextView.measure(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                if (it.mTextView.getMeasuredWidth() > maxTextWidth) {
+                    maxTextWidth = it.mTextView.getMeasuredWidth();
+                }
+                if (it.mTextView.getMeasuredHeight() > maxTextHeight) {
+                    maxTextHeight = it.mTextView.getMeasuredHeight();
+                }
+            }
+            mTextRadius = (diameter / 2) -  (Math.max(maxTextWidth, maxTextHeight) / 2);
+            for (Map.Entry<String, Item> entry : mItems.entrySet()) {
+                Item it = entry.getValue();
+                it.mTextView.layout(
+                        getXCoord(it.mCenterAngle, mTextRadius) - (it.mTextView.getMeasuredWidth() / 2),
+                        getYCoord(it.mCenterAngle, mTextRadius) - (it.mTextView.getMeasuredHeight() / 2),
+                        getXCoord(it.mCenterAngle, mTextRadius) + (it.mTextView.getMeasuredWidth() / 2),
+                        getYCoord(it.mCenterAngle, mTextRadius) + (it.mTextView.getMeasuredHeight() / 2));
+            }
         }
+
+        mDiagramRadius = (diameter / 2) - Math.max(maxTextWidth, maxTextHeight) - mRingThickness;
+        mDiagramBounds = new RectF(0.0f, 0.0f, mDiagramRadius * 2, mDiagramRadius * 2);
+        mDiagramBounds.offsetTo(((diameter - (mDiagramRadius * 2)) / 2), ((diameter - (mDiagramRadius * 2)) / 2));
+
         onDataChanged();
     }
 
@@ -323,17 +355,14 @@ public class ChordDiagram extends ViewGroup {
         float startAngle = 0.0f;
         float endAngle;
 
-        // Assign angles to arcs that have connections.
+        // Assign angles to items.
         for (Map.Entry<String, Item> entry : mItems.entrySet()) {
             Item item = entry.getValue();
             item.mNumUnassigned = item.mNumConnections;
             item.mStartAngle = startAngle;
             endAngle = (startAngle + (360.0f / mItems.size()));
             item.mEndAngle = endAngle;
-            float centreAngle = ((item.mStartAngle + item.mEndAngle) / 2);
-            item.mLabelAngle = centreAngle;
-            item.mLabelStartX = getXCoord(centreAngle);
-            item.mLabelStartY = getYCoord(centreAngle);
+            item.mCenterAngle = ((item.mStartAngle + item.mEndAngle) / 2);
             startAngle = endAngle;
         }
     }
@@ -370,8 +399,8 @@ public class ChordDiagram extends ViewGroup {
     }
 
     public void deleteItem(String label) {
-        mItems.remove(label);
         removeView(mItems.get(label).mTextView);
+        mItems.remove(label);
     }
 
     public void addLink(String first, String second) {
@@ -426,8 +455,8 @@ public class ChordDiagram extends ViewGroup {
             float scrollTheta = vectorToScalarScroll(
                     distanceX,
                     distanceY,
-                    e2.getX() - mDiagramBounds.centerX(),
-                    e2.getY() - mDiagramBounds.centerY());
+                    e2.getX() - mViewBounds.centerX(),
+                    e2.getY() - mViewBounds.centerY());
             int theta = (int) scrollTheta / FLING_VELOCITY_DOWNSCALE;
             int rotation = getDiagramRotation() - theta;
             setDiagramRotation(rotation);
@@ -441,9 +470,8 @@ public class ChordDiagram extends ViewGroup {
             float scrollTheta = vectorToScalarScroll(
                     velocityX,
                     velocityY,
-                    e2.getX() - mDiagramBounds.centerX(),
-                    e2.getY() - mDiagramBounds.centerY());
-            Log.d("Fling theta", String.valueOf((int) scrollTheta / FLING_VELOCITY_DOWNSCALE));
+                    e2.getX() - mViewBounds.centerX(),
+                    e2.getY() - mViewBounds.centerY());
             mScroller.fling(
                     0,
                     getDiagramRotation(),
@@ -462,9 +490,9 @@ public class ChordDiagram extends ViewGroup {
 
         @Override
         public boolean onDown(MotionEvent e) {
-            // The user is interacting with the pie, so we want to turn on acceleration
+            // The user is interacting with the diagram, so we want to turn on acceleration
             // so that the interaction is smooth.
-            mChordDiagramView.accelerate();
+            mChordDiagramView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             for (Map.Entry<String, Item> entry : mItems.entrySet()) {
                 entry.getValue().mTextView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             }
@@ -494,7 +522,7 @@ public class ChordDiagram extends ViewGroup {
      * Called when the user finishes a scroll action.
      */
     private void onScrollFinished() {
-        mChordDiagramView.decelerate();
+        mChordDiagramView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         for (Map.Entry<String, Item> entry : mItems.entrySet()) {
             entry.getValue().mTextView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
@@ -522,34 +550,11 @@ public class ChordDiagram extends ViewGroup {
             super(context);
         }
 
-        /**
-         * Enable hardware acceleration (consumes memory)
-         */
-        public void accelerate() {
-            setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        }
-
-        /**
-         * Disable hardware acceleration (releases memory)
-         */
-        public void decelerate() {
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             drawItems(canvas);
             drawLinks(canvas);
-        }
-
-        public void rotateTo(float diagramRotation) {
-            setRotation(diagramRotation);
-        }
-
-        public void setPivot(float x, float y) {
-            setPivotX(x);
-            setPivotY(y);
         }
 
         private void drawItems(Canvas canvas) {
@@ -558,30 +563,38 @@ public class ChordDiagram extends ViewGroup {
                 mItemPaint.setColor(item.mColour);
                 if (mItemStyle == 0) { // Items are arcs
                     mItemPaint.setStyle(Paint.Style.FILL);
-//                    mItemPaint.setStrokeWidth(mRingThickness);
                     Path path = new Path();
 
                     float sweepAngle = (item.mEndAngle - item.mStartAngle);
                     if (mItems.size() == 1) {
                         canvas.drawCircle(
-                                mDiagramBounds.centerX(),
-                                mDiagramBounds.centerY(),
-                                mRadius, mItemPaint
-                        );
+                                mViewBounds.centerX(),
+                                mViewBounds.centerY(),
+                                mDiagramRadius,
+                                mItemPaint);
                     } else {
-                        path.moveTo(mDiagramBounds.centerX(), mDiagramBounds.centerY());
-                        path.lineTo(getXCoord(item.mStartAngle), getYCoord(item.mStartAngle));
+                        path.moveTo(mViewBounds.centerX(), mViewBounds.centerY());
+                        path.lineTo(
+                                getXCoord(item.mStartAngle, mDiagramRadius),
+                                getYCoord(item.mStartAngle, mDiagramRadius));
                         path.arcTo(mDiagramBounds, item.mStartAngle, sweepAngle);
                         canvas.drawPath(path, mItemPaint);
                     }
-                    Paint testPaint = new Paint();
-                    testPaint.setColor(Color.WHITE);
-                    testPaint.setStyle(Paint.Style.FILL);
-                    canvas.drawCircle(mDiagramBounds.centerX(), mDiagramBounds.centerY(), mRadius - 20, testPaint);
+
+                    canvas.drawCircle(
+                            mViewBounds.centerX(),
+                            mViewBounds.centerY(),
+                            mDiagramRadius - mRingThickness,
+                            mInnerCirclePaint);
                 } else { // Items are nodes
                     mItemPaint.setStyle(Paint.Style.FILL);
                     float centreAngle = ((item.mStartAngle + item.mEndAngle) / 2);
-                    canvas.drawCircle(getXCoord(centreAngle), getYCoord(centreAngle), 20, mItemPaint);
+                    // TODO: Soft-code node radius.
+                    canvas.drawCircle(
+                            getXCoord(centreAngle, mDiagramRadius),
+                            getYCoord(centreAngle, mDiagramRadius),
+                            20,
+                            mItemPaint);
                 }
             }
         }
@@ -593,10 +606,10 @@ public class ChordDiagram extends ViewGroup {
                 Item item1 = link.mItem1;
                 Item item2 = link.mItem2;
 
-                int startX = getXCoord(link.mEndpointAngle1);
-                int startY = getYCoord(link.mEndpointAngle1);
-                int endX = getXCoord(link.mEndpointAngle2);
-                int endY = getYCoord(link.mEndpointAngle2);
+                int startX = getXCoord(link.mEndpointAngle1, mDiagramRadius);
+                int startY = getYCoord(link.mEndpointAngle1, mDiagramRadius);
+                int endX = getXCoord(link.mEndpointAngle2, mDiagramRadius);
+                int endY = getYCoord(link.mEndpointAngle2, mDiagramRadius);
 
                 drawBezier(canvas, item1.mColour, item2.mColour, startX, startY, endX, endY);
             }
@@ -613,8 +626,8 @@ public class ChordDiagram extends ViewGroup {
 
             float previousX = 0.0f;
             float previousY = 0.0f;
-            float centreX = mDiagramBounds.centerX();
-            float centreY = mDiagramBounds.centerY();
+            float centreX = mViewBounds.centerX();
+            float centreY = mViewBounds.centerY();
 
             for (float t = 0; t < 1; t += 0.01) {
                 Path path = new Path();
@@ -667,19 +680,11 @@ public class ChordDiagram extends ViewGroup {
         return l * sign;
     }
 
-    private int getXCoord(float theta) {
-        return (int) ((mRadius * Math.cos(Math.toRadians(theta))) + mDiagramBounds.centerX());
+    private int getXCoord(float theta, float radius) {
+        return (int) ((radius * Math.cos(Math.toRadians(theta))) + mViewBounds.centerX());
     }
 
-    private int getYCoord(float theta) {
-        return (int) ((mRadius * Math.sin(Math.toRadians(theta))) + mDiagramBounds.centerY());
-    }
-
-    private float getAngle(float x, float y) {
-        return (float) Math.atan(y / x);
-    }
-
-    private float getArcLength(float theta) {
-        return (float) (2 * Math.PI * mRadius * (theta / 360.0f));
+    private int getYCoord(float theta, float radius) {
+        return (int) ((radius * Math.sin(Math.toRadians(theta))) + mViewBounds.centerY());
     }
 }
