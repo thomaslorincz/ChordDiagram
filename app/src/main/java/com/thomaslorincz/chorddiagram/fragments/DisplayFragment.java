@@ -32,12 +32,13 @@ public class DisplayFragment extends Fragment {
         final View v = inflater.inflate(R.layout.fragment_display, container, false);
         chordDiagram = v.findViewById(R.id.chord_diagram);
 
+        // Test data.
         chordDiagram.addItem("1", Color.BLUE);
         chordDiagram.addItem("2", Color.RED);
         chordDiagram.addItem("3", Color.GREEN);
         chordDiagram.addItem("4", Color.YELLOW);
         chordDiagram.addItem("5", Color.MAGENTA);
-        chordDiagram.addItem("5", Color.MAGENTA);
+        chordDiagram.addItem("5", Color.MAGENTA); // Duplicates are not added to data set.
 
         chordDiagram.addLink("1", "2");
         chordDiagram.addLink("1", "3");
@@ -51,7 +52,7 @@ public class DisplayFragment extends Fragment {
         chordDiagram.addLink("3", "4");
         chordDiagram.addLink("3", "5");
 
-        chordDiagram.addLink("4", "5");
+        chordDiagram.addLink("4", "5"); // Duplicates are not added to data set.
         chordDiagram.addLink("4", "5");
         chordDiagram.addLink("4", "5");
 

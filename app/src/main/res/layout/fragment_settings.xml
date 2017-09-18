@@ -14,54 +14,113 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="@string/item_style"/>
+            android:text="@string/add_item"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/item_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/arc_style"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="50"/>
+                android:text="@string/red"
+                android:textColor="@color/red"/>
 
-            <ImageButton
-                android:id="@+id/node_style"
+            <TextView
+                android:id="@+id/red_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="50"/>
+                android:textColor="@color/red"/>
 
         </LinearLayout>
 
-        <TextView
+        <SeekBar
+            android:id="@+id/red_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/add_item"/>
+            android:max="255"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/green"
+                android:textColor="@color/green"/>
+
+            <TextView
+                android:id="@+id/green_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/green"/>
+
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/green_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="255"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/blue"
+                android:textColor="@color/blue"/>
+
+            <TextView
+                android:id="@+id/blue_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/blue"/>
+
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/blue_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="255"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="8"/>
-
-            <ImageButton
+            <Button
                 android:id="@+id/add_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="3"
+                android:text="@string/add"/>
 
-            <ImageButton
+            <Button
                 android:id="@+id/delete_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="3"
+                android:text="@string/delete"/>
+
+            <Button
+                android:id="@+id/clear_item_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:text="@string/clear_text"/>
 
         </LinearLayout>
 
@@ -77,21 +136,44 @@
             android:orientation="horizontal">
 
             <EditText
-                android:layout_width="wrap_content"
+                android:id="@+id/item1_edittext"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="8"/>
+                android:layout_weight="5"/>
 
-            <ImageButton
+            <EditText
+                android:id="@+id/item2_edittext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
                 android:id="@+id/add_link"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="3"
+                android:text="@string/add"/>
 
-            <ImageButton
+            <Button
                 android:id="@+id/delete_link"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="3"
+                android:text="@string/delete"/>
+
+            <Button
+                android:id="@+id/clear_link_texts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:text="@string/clear_text"/>
 
         </LinearLayout>
 

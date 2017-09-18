@@ -8,7 +8,7 @@ import com.thomaslorincz.chorddiagram.fragments.DisplayFragment;
 import com.thomaslorincz.chorddiagram.fragments.SettingsFragment;
 
 /**
- * Created by Thomas on 27/08/2017.
+ * Created by Thomas on 17/09/2017.
  */
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {

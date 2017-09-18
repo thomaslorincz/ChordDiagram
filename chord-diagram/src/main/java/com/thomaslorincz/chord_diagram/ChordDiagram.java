@@ -346,6 +346,7 @@ public class ChordDiagram extends ViewGroup {
     }
 
     private void onDataChanged() {
+        setDiagramRotation(0);
         assignItemAngles();
         assignLinkAngles();
         onScrollFinished();
@@ -401,6 +402,7 @@ public class ChordDiagram extends ViewGroup {
     public void deleteItem(String label) {
         removeView(mItems.get(label).mTextView);
         mItems.remove(label);
+        onDataChanged();
     }
 
     public void addLink(String first, String second) {
